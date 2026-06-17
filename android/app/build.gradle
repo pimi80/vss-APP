@@ -24,6 +24,10 @@ react {
     // debuggableVariants = ["liteDebug", "liteDebugOptimized", "prodDebug", "prodDebugOptimized"]
 
     /* Bundling */
+    bundleInDebug = false
+    bundleInRelease = true
+    devDisabledInRelease = true
+    entryFile = "index.js"
     //   A list containing the node command and its flags. Default is just 'node'.
     // nodeExecutableAndArgs = ["node"]
     //
