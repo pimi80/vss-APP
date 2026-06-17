@@ -2,19 +2,19 @@
 // Domain whitelist and navigation links
 
 export const SITE_1 = {
-  name: 'سایت اول vss',
-  domain: 'vssgroup.ir',
-  url: 'https://vssgroup.ir',
-  icon: 'home',
-  color: '#dc2626',
+  name: 'ثبت گارانتی شرکت',
+  domain: 'vss-orginal-gr.com',
+  url: 'http://vss-orginal-gr.com/',
+  icon: '🏢',
+  color: '#dc2626', // red
 };
 
 export const SITE_2 = {
-  name: 'سایت دوم vss',
-  domain: 'vss-co.com',
-  url: 'https://vss-co.com',
-  icon: 'globe',
-  color: '#2563eb',
+  name: 'فروشگاه شرکت',
+  domain: 'vssorginal.com',
+  url: 'http://vssorginal.com/',
+  icon: '🌐',
+  color: '#2563eb', // blue
 };
 
 // Allowed domains
@@ -30,14 +30,14 @@ export const DEFAULT_URL = SITE_1.url;
 
 // Quick links for drawer
 export const QUICK_LINKS = [
-  { label: 'صفحه اصلی سایت اول', url: SITE_1.url, icon: 'home', site: 1 },
-  { label: 'صفحه اصلی سایت دوم', url: SITE_2.url, icon: 'home', site: 2 },
-  { label: 'درباره ما', url: `${SITE_1.url}/about`, icon: 'info-circle', site: 1 },
-  { label: 'تماس با ما', url: `${SITE_1.url}/contact`, icon: 'phone', site: 1 },
-  { label: 'خدمات', url: `${SITE_1.url}/services`, icon: 'cogs', site: 1 },
-  { label: 'بلاگ', url: `${SITE_2.url}/blog`, icon: 'newspaper-o', site: 2 },
-  { label: 'محصولات', url: `${SITE_2.url}/products`, icon: 'cube', site: 2 },
-  { label: 'پشتیبانی', url: `${SITE_2.url}/support`, icon: 'life-ring', site: 2 },
+  { label: 'صفحه اصلی سایت اول', url: SITE_1.url, icon: '🏠', site: 1 },
+  { label: 'صفحه اصلی سایت دوم', url: SITE_2.url, icon: '🏠', site: 2 },
+  { label: 'درباره ما', url: `${SITE_1.url}/about-us/`, icon: '📋', site: 1 },
+  { label: 'تماس با ما', url: `${SITE_1.url}/contact-us`, icon: '📞', site: 1 },
+  { label: 'فعال سازی گارانتی', url: `${SITE_1.url}/en/crm/`, icon: '⚙️', site: 1 },
+  { label: 'بلاگ', url: `${SITE_2.url}/mag/`, icon: '📝', site: 2 },
+  { label: 'محصولات', url: `${SITE_2.url}/فروشگاه/`, icon: '📦', site: 2 },
+  { label: 'پشتیبانی', url: `${SITE_2.url}/تماس-با-ما/`, icon: '🛟', site: 2 },
 ];
 
 // Brand colors

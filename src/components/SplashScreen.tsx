@@ -97,7 +97,7 @@ export default function SplashScreen({ onFinish }: SplashScreenProps) {
 
       {/* Subtitle */}
       <Text style={styles.subtitle}>
-        مرورگر اختصاصی{' '}
+        اپلیکیشن اختصاصی{' '}
         <Text style={{ color: COLORS.brandRed, fontStyle: 'italic' }}>v</Text>
         <Text style={{ color: COLORS.brandBlue, fontStyle: 'italic' }}>ss</Text>
       </Text>
@@ -117,7 +117,7 @@ export default function SplashScreen({ onFinish }: SplashScreenProps) {
       {/* Version */}
       <View style={styles.footer}>
         <Text style={styles.version}>نسخه ۱.۰</Text>
-        <Text style={styles.appName}>vss Browser App</Text>
+        <Text style={styles.appName}>vss App</Text>
       </View>
     </Animated.View>
   );
