@@ -27,8 +27,8 @@ export default function AppNavigator() {
               backgroundColor: colors.surface,
             },
             overlayColor: 'rgba(0,0,0,0.6)',
-            swipeEdgeWidth: 50,
-            swipeEnabled: true,
+            swipeEdgeWidth: 0,
+            swipeEnabled: false,
           }}
           drawerContent={(props) => (
             <RightDrawer

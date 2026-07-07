@@ -38,6 +38,7 @@ export default function WebViewScreen() {
   const [isBlocked, setIsBlocked] = useState(false);
   const [blockedUrl, setBlockedUrl] = useState('');
   const [leftDrawerOpen, setLeftDrawerOpen] = useState(false);
+  const [rightDrawerOpen, setRightDrawerOpen] = useState(false);
 
   React.useEffect(() => {
     const unsubscribe = NetInfo.addEventListener(state => {
@@ -93,7 +94,8 @@ export default function WebViewScreen() {
     setCurrentUrl(url);
   }, []);
 
-  const openDrawer = useCallback(() => {
+  const openRightDrawer = useCallback(() => {
+    setRightDrawerOpen(true);
     navigation.dispatch(DrawerActions.openDrawer());
   }, [navigation]);
 
@@ -104,6 +106,8 @@ export default function WebViewScreen() {
       return currentUrl;
     }
   };
+
+  const isAnyDrawerOpen = leftDrawerOpen || rightDrawerOpen;
 
   if (!isOnline) {
     return <OfflineScreen onRetry={handleRefresh} type="offline" />;
@@ -150,13 +154,13 @@ export default function WebViewScreen() {
             </Text>
           </View>
 
-          <TouchableOpacity style={styles.iconBtn} onPress={openDrawer}>
+          <TouchableOpacity style={styles.iconBtn} onPress={openRightDrawer}>
             <Icon name="bars" size={18} color={colors.textSecondary} />
           </TouchableOpacity>
         </View>
       </View>
 
-      <View style={styles.webViewContainer}>
+      <View style={styles.webViewContainer} pointerEvents={isAnyDrawerOpen ? 'none' : 'auto'}>
         {isLoading && (
           <View style={styles.loadingBar}>
             <View style={styles.loadingBarProgress} />
@@ -218,6 +222,7 @@ export default function WebViewScreen() {
         </TouchableOpacity>
       </View>
 
+      {/* Left Drawer */}
       <LeftDrawer
         isOpen={leftDrawerOpen}
         onClose={() => setLeftDrawerOpen(false)}
@@ -228,6 +233,18 @@ export default function WebViewScreen() {
         canGoBack={canGoBack}
         canGoForward={canGoForward}
       />
+
+      {/* Right Drawer overlay for closing when clicking outside */}
+      {rightDrawerOpen && (
+        <TouchableOpacity
+          style={StyleSheet.absoluteFill}
+          activeOpacity={1}
+          onPress={() => {
+            setRightDrawerOpen(false);
+            navigation.dispatch(DrawerActions.closeDrawer());
+          }}
+        />
+      )}
     </View>
   );
 }
