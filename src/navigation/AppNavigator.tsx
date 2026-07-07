@@ -21,21 +21,14 @@ export default function AppNavigator() {
             headerShown: false,
             drawerPosition: 'right',
             drawerType: 'front',
-            drawerStyle: {
-              width: width * 0.8,
-              maxWidth: 320,
-              backgroundColor: colors.surface,
-            },
+            drawerStyle: { width: width * 0.8, maxWidth: 320, backgroundColor: colors.surface },
             overlayColor: 'rgba(0,0,0,0.6)',
             swipeEdgeWidth: 0,
             swipeEnabled: false,
           }}
           drawerContent={(props) => (
             <RightDrawer
-              onNavigate={(url) => {
-                props.navigation.navigate('WebView', { url });
-                props.navigation.closeDrawer();
-              }}
+              onNavigate={(url) => { props.navigation.navigate('WebView', { url }); props.navigation.closeDrawer(); }}
               onBack={() => {}}
               onForward={() => {}}
               onRefresh={() => {}}
