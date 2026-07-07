@@ -1,11 +1,9 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, I18nManager } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
-import Animated, { FadeIn, SlideInLeft } from 'react-native-reanimated';
+import Animated, { SlideInLeft } from 'react-native-reanimated';
 import { useTheme } from '../hooks/useTheme';
 import { SITE_1, SITE_2 } from '../config';
-
-I18nManager.forceRTL(true);
 
 interface LeftDrawerProps {
   isOpen: boolean;
@@ -40,12 +38,9 @@ export default function LeftDrawer({
 
   return (
     <View style={styles.overlay}>
-      {/* Backdrop */}
       <TouchableOpacity style={styles.backdrop} onPress={onClose} activeOpacity={1} />
 
-      {/* Drawer */}
       <Animated.View entering={SlideInLeft.duration(300)} style={[styles.drawer, { backgroundColor: colors.surface }]}>
-        {/* Header */}
         <View style={styles.header}>
           <Text style={[styles.headerTitle, { color: colors.text }]}>ابزارها</Text>
           <TouchableOpacity style={[styles.closeBtn, { backgroundColor: colors.card }]} onPress={onClose}>
@@ -53,10 +48,8 @@ export default function LeftDrawer({
           </TouchableOpacity>
         </View>
 
-        {/* Divider */}
         <View style={styles.divider} />
 
-        {/* Navigation tools */}
         <View style={styles.section}>
           <Text style={[styles.sectionLabel, { color: colors.textSecondary }]}>ناوبری</Text>
           {tools.map((tool, i) => (
@@ -74,10 +67,8 @@ export default function LeftDrawer({
           ))}
         </View>
 
-        {/* Divider */}
         <View style={[styles.divider, { opacity: 0.3 }]} />
 
-        {/* Home buttons */}
         <View style={styles.section}>
           <Text style={[styles.sectionLabel, { color: colors.textSecondary }]}>صفحات اصلی</Text>
 
@@ -102,7 +93,6 @@ export default function LeftDrawer({
           </TouchableOpacity>
         </View>
 
-        {/* Footer */}
         <View style={[styles.footer, { borderTopColor: colors.border }]}>
           <Text style={[styles.footerText, { color: colors.textSecondary }]}>
             ابزارهای ناوبری VSS
