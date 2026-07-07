@@ -18,6 +18,7 @@ import { useTheme } from '../hooks/useTheme';
 import { COLORS, DEFAULT_URL, SITE_1, SITE_2, isAllowedUrl, isSpecialScheme } from '../config';
 import OfflineScreen from '../components/OfflineScreen';
 import BlockedScreen from '../components/BlockedScreen';
+import LeftDrawer from '../components/LeftDrawer';
 
 export default function WebViewScreen() {
   const navigation = useNavigation();
@@ -33,6 +34,7 @@ export default function WebViewScreen() {
   const [hasError, setHasError] = useState(false);
   const [isBlocked, setIsBlocked] = useState(false);
   const [blockedUrl, setBlockedUrl] = useState('');
+  const [leftDrawerOpen, setLeftDrawerOpen] = useState(false);
 
   // Monitor network status
   React.useEffect(() => {
@@ -54,13 +56,11 @@ export default function WebViewScreen() {
   const handleShouldStartLoad = useCallback((event: { url: string }) => {
     const { url } = event;
 
-    // Allow special schemes
     if (isSpecialScheme(url)) {
       Linking.openURL(url);
       return false;
     }
 
-    // Check whitelist
     if (!isAllowedUrl(url)) {
       setIsBlocked(true);
       setBlockedUrl(url);
@@ -102,12 +102,10 @@ export default function WebViewScreen() {
     }
   };
 
-  // Offline screen
   if (!isOnline) {
     return <OfflineScreen onRetry={handleRefresh} type="offline" />;
   }
 
-  // Blocked screen
   if (isBlocked) {
     return (
       <BlockedScreen
@@ -120,7 +118,6 @@ export default function WebViewScreen() {
     );
   }
 
-  // Error screen
   if (hasError) {
     return <OfflineScreen onRetry={handleRefresh} type="error" />;
   }
@@ -134,12 +131,11 @@ export default function WebViewScreen() {
 
       {/* App Bar */}
       <View style={[styles.appBar, { backgroundColor: colors.surface, paddingTop: insets.top }]}>
-        {/* Gradient line */}
         <View style={styles.gradientLine} />
 
         <View style={styles.appBarContent}>
-          {/* Tools button (Left in RTL = Right visually) */}
-          <TouchableOpacity style={styles.iconBtn} onPress={() => {}}>
+          {/* Tools button - opens LeftDrawer */}
+          <TouchableOpacity style={styles.iconBtn} onPress={() => setLeftDrawerOpen(true)}>
             <Icon name="wrench" size={18} color={colors.textSecondary} />
           </TouchableOpacity>
 
@@ -155,7 +151,7 @@ export default function WebViewScreen() {
             </Text>
           </View>
 
-          {/* Menu button */}
+          {/* Menu button - opens RightDrawer */}
           <TouchableOpacity style={styles.iconBtn} onPress={openDrawer}>
             <Icon name="bars" size={18} color={colors.textSecondary} />
           </TouchableOpacity>
@@ -164,7 +160,6 @@ export default function WebViewScreen() {
 
       {/* WebView */}
       <View style={styles.webViewContainer}>
-        {/* Loading bar */}
         {isLoading && (
           <View style={styles.loadingBar}>
             <View style={styles.loadingBarProgress} />
@@ -238,6 +233,18 @@ export default function WebViewScreen() {
           <Text style={[styles.bottomBtnText, { color: colors.textSecondary }]}>{SITE_2.domain.split('.')[0]}</Text>
         </TouchableOpacity>
       </View>
+
+      {/* Left Drawer */}
+      <LeftDrawer
+        isOpen={leftDrawerOpen}
+        onClose={() => setLeftDrawerOpen(false)}
+        onRefresh={handleRefresh}
+        onBack={handleBack}
+        onForward={handleForward}
+        onGoHome={handleGoHome}
+        canGoBack={canGoBack}
+        canGoForward={canGoForward}
+      />
     </View>
   );
 }

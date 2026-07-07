@@ -33,12 +33,10 @@ export default function VSSLogo({ size = 'md', animate = true }: VSSLogoProps) {
 
   useEffect(() => {
     if (animate) {
-      // Staggered entrance
       scaleV.value = withSpring(1, { damping: 12, stiffness: 200 });
       scaleS1.value = withDelay(150, withSpring(1, { damping: 12, stiffness: 200 }));
       scaleS2.value = withDelay(300, withSpring(1, { damping: 12, stiffness: 200 }));
       
-      // Pulse glow
       glowOpacity.value = withRepeat(
         withSequence(
           withTiming(0.8, { duration: 1000 }),
@@ -105,6 +103,7 @@ export default function VSSLogo({ size = 'md', animate = true }: VSSLogoProps) {
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
+    writingDirection: 'ltr',
     alignItems: 'baseline',
     justifyContent: 'center',
   },

@@ -1,7 +1,11 @@
-import { motion, AnimatePresence } from 'framer-motion';
-import { X, RefreshCw, ArrowLeft, ArrowRight, Home } from 'lucide-react';
-import { SITE_1, SITE_2 } from '../config';
+import React from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, I18nManager } from 'react-native';
+import Icon from 'react-native-vector-icons/FontAwesome';
+import Animated, { FadeIn, SlideInLeft } from 'react-native-reanimated';
 import { useTheme } from '../hooks/useTheme';
+import { SITE_1, SITE_2 } from '../config';
+
+I18nManager.forceRTL(true);
 
 interface LeftDrawerProps {
   isOpen: boolean;
@@ -24,164 +28,120 @@ export default function LeftDrawer({
   canGoBack,
   canGoForward,
 }: LeftDrawerProps) {
-  const { isDark } = useTheme();
+  const { isDark, colors } = useTheme();
+
+  if (!isOpen) return null;
 
   const tools = [
-    {
-      label: 'بازگشت',
-      icon: <ArrowRight className="w-6 h-6" />,
-      action: onBack,
-      disabled: !canGoBack,
-    },
-    {
-      label: 'جلو',
-      icon: <ArrowLeft className="w-6 h-6" />,
-      action: onForward,
-      disabled: !canGoForward,
-    },
-    {
-      label: 'بارگذاری مجدد',
-      icon: <RefreshCw className="w-6 h-6" />,
-      action: onRefresh,
-      disabled: false,
-    },
+    { label: 'بازگشت', icon: 'arrow-right', action: () => { onBack(); onClose(); }, disabled: !canGoBack },
+    { label: 'جلو', icon: 'arrow-left', action: () => { onForward(); onClose(); }, disabled: !canGoForward },
+    { label: 'بارگذاری مجدد', icon: 'refresh', action: () => { onRefresh(); onClose(); }, disabled: false },
   ];
 
   return (
-    <AnimatePresence>
-      {isOpen && (
-        <>
-          {/* Backdrop */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
-            className="fixed inset-0 bg-black/60 z-[60] backdrop-blur-sm"
-            onClick={onClose}
-          />
+    <View style={styles.overlay}>
+      {/* Backdrop */}
+      <TouchableOpacity style={styles.backdrop} onPress={onClose} activeOpacity={1} />
 
-          {/* Drawer */}
-          <motion.div
-            initial={{ x: '-100%' }}
-            animate={{ x: 0 }}
-            exit={{ x: '-100%' }}
-            transition={{ type: 'spring' as const, damping: 25, stiffness: 300 }}
-            className={`fixed top-0 left-0 bottom-0 w-[280px] max-w-[80vw] z-[70] flex flex-col transition-colors duration-300
-              ${isDark
-                ? 'bg-brand-dark border-r border-white/10'
-                : 'bg-white border-r border-gray-200 shadow-2xl'
-              }`}
-          >
-            {/* Header */}
-            <div className="p-6 pb-4">
-              <div className="flex items-center justify-between mb-2">
-                <h3 className={`font-semibold text-sm ${isDark ? 'text-white/80' : 'text-gray-700'}`} dir="rtl">ابزارها</h3>
-                <motion.button
-                  whileHover={{ scale: 1.1, rotate: -90 }}
-                  whileTap={{ scale: 0.9 }}
-                  onClick={onClose}
-                  className={`w-9 h-9 rounded-xl flex items-center justify-center transition-colors
-                    ${isDark
-                      ? 'glass text-white/70 hover:text-white'
-                      : 'bg-gray-100 border border-gray-200 text-gray-400 hover:text-gray-700'
-                    }`}
-                >
-                  <X className="w-5 h-5" />
-                </motion.button>
-              </div>
-            </div>
+      {/* Drawer */}
+      <Animated.View entering={SlideInLeft.duration(300)} style={[styles.drawer, { backgroundColor: colors.surface }]}>
+        {/* Header */}
+        <View style={styles.header}>
+          <Text style={[styles.headerTitle, { color: colors.text }]}>ابزارها</Text>
+          <TouchableOpacity style={[styles.closeBtn, { backgroundColor: colors.card }]} onPress={onClose}>
+            <Icon name="times" size={18} color={colors.textSecondary} />
+          </TouchableOpacity>
+        </View>
 
-            {/* Divider */}
-            <div className="mx-6 h-px bg-gradient-to-r from-brand-blue/30 via-transparent to-brand-red/30" />
+        {/* Divider */}
+        <View style={styles.divider} />
 
-            {/* Navigation tools */}
-            <div className="p-4 space-y-2" dir="rtl">
-              <p className={`text-xs px-3 mb-3 ${isDark ? 'text-white/40' : 'text-gray-400'}`}>ناوبری</p>
-              {tools.map((tool, i) => (
-                <motion.button
-                  key={i}
-                  whileHover={{ x: 4 }}
-                  whileTap={{ scale: 0.97 }}
-                  onClick={() => { tool.action(); onClose(); }}
-                  disabled={tool.disabled}
-                  className={`w-full flex items-center gap-4 px-4 py-3.5 rounded-xl text-right transition-colors duration-200
-                    ${tool.disabled
-                      ? isDark ? 'text-white/20 cursor-not-allowed' : 'text-gray-300 cursor-not-allowed'
-                      : isDark
-                        ? 'text-white hover:bg-white/5'
-                        : 'text-gray-700 hover:bg-gray-100'
-                    }`}
-                >
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center
-                    ${tool.disabled
-                      ? isDark ? 'bg-white/5' : 'bg-gray-50'
-                      : isDark ? 'glass' : 'bg-gray-100 border border-gray-200'
-                    }`}>
-                    {tool.icon}
-                  </div>
-                  <span className="text-sm font-medium">{tool.label}</span>
-                </motion.button>
-              ))}
-            </div>
+        {/* Navigation tools */}
+        <View style={styles.section}>
+          <Text style={[styles.sectionLabel, { color: colors.textSecondary }]}>ناوبری</Text>
+          {tools.map((tool, i) => (
+            <TouchableOpacity
+              key={i}
+              style={[styles.toolItem, { opacity: tool.disabled ? 0.3 : 1 }]}
+              onPress={tool.action}
+              disabled={tool.disabled}
+            >
+              <View style={[styles.toolIcon, { backgroundColor: colors.card }]}>
+                <Icon name={tool.icon} size={18} color={colors.text} />
+              </View>
+              <Text style={[styles.toolLabel, { color: colors.text }]}>{tool.label}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
 
-            {/* Divider */}
-            <div className={`mx-6 h-px my-2 ${isDark ? 'bg-white/5' : 'bg-gray-100'}`} />
+        {/* Divider */}
+        <View style={[styles.divider, { opacity: 0.3 }]} />
 
-            {/* Home buttons */}
-            <div className="p-4 space-y-2" dir="rtl">
-              <p className={`text-xs px-3 mb-3 ${isDark ? 'text-white/40' : 'text-gray-400'}`}>صفحات اصلی</p>
+        {/* Home buttons */}
+        <View style={styles.section}>
+          <Text style={[styles.sectionLabel, { color: colors.textSecondary }]}>صفحات اصلی</Text>
 
-              <motion.button
-                whileHover={{ x: 4 }}
-                whileTap={{ scale: 0.97 }}
-                onClick={() => { onGoHome(SITE_1.url); onClose(); }}
-                className={`w-full flex items-center gap-4 px-4 py-3.5 rounded-xl text-right transition-colors duration-200 group
-                  ${isDark
-                    ? 'text-white hover:bg-red-500/10'
-                    : 'text-gray-700 hover:bg-red-50'
-                  }`}
-              >
-                <div className="w-10 h-10 rounded-xl bg-brand-red/10 border border-brand-red/20 flex items-center justify-center
-                  group-hover:bg-brand-red/20 transition-colors">
-                  <Home className="w-5 h-5 text-brand-red" />
-                </div>
-                <div className="flex flex-col items-start">
-                  <span className="text-sm font-medium">{SITE_1.name}</span>
-                  <span className={`text-[10px] ${isDark ? 'text-white/30' : 'text-gray-400'}`} dir="ltr">{SITE_1.domain}</span>
-                </div>
-              </motion.button>
+          <TouchableOpacity style={styles.homeBtn} onPress={() => { onGoHome(SITE_1.url); onClose(); }}>
+            <View style={[styles.homeIcon, { backgroundColor: '#ef444420' }]}>
+              <Icon name="home" size={18} color="#ef4444" />
+            </View>
+            <View>
+              <Text style={[styles.homeName, { color: colors.text }]}>{SITE_1.name}</Text>
+              <Text style={[styles.homeDomain, { color: colors.textSecondary }]}>{SITE_1.domain}</Text>
+            </View>
+          </TouchableOpacity>
 
-              <motion.button
-                whileHover={{ x: 4 }}
-                whileTap={{ scale: 0.97 }}
-                onClick={() => { onGoHome(SITE_2.url); onClose(); }}
-                className={`w-full flex items-center gap-4 px-4 py-3.5 rounded-xl text-right transition-colors duration-200 group
-                  ${isDark
-                    ? 'text-white hover:bg-blue-500/10'
-                    : 'text-gray-700 hover:bg-blue-50'
-                  }`}
-              >
-                <div className="w-10 h-10 rounded-xl bg-brand-blue/10 border border-brand-blue/20 flex items-center justify-center
-                  group-hover:bg-brand-blue/20 transition-colors">
-                  <Home className="w-5 h-5 text-brand-blue" />
-                </div>
-                <div className="flex flex-col items-start">
-                  <span className="text-sm font-medium">{SITE_2.name}</span>
-                  <span className={`text-[10px] ${isDark ? 'text-white/30' : 'text-gray-400'}`} dir="ltr">{SITE_2.domain}</span>
-                </div>
-              </motion.button>
-            </div>
+          <TouchableOpacity style={styles.homeBtn} onPress={() => { onGoHome(SITE_2.url); onClose(); }}>
+            <View style={[styles.homeIcon, { backgroundColor: '#3b82f620' }]}>
+              <Icon name="home" size={18} color="#3b82f6" />
+            </View>
+            <View>
+              <Text style={[styles.homeName, { color: colors.text }]}>{SITE_2.name}</Text>
+              <Text style={[styles.homeDomain, { color: colors.textSecondary }]}>{SITE_2.domain}</Text>
+            </View>
+          </TouchableOpacity>
+        </View>
 
-            {/* Footer */}
-            <div className={`mt-auto p-4 border-t ${isDark ? 'border-white/5' : 'border-gray-100'}`}>
-              <p className={`text-center text-[10px] ${isDark ? 'text-white/20' : 'text-gray-300'}`}>
-                ابزارهای ناوبری <span className="italic font-semibold" dir="ltr"><span className="text-brand-red">v</span><span className="text-brand-blue">ss</span></span>
-              </p>
-            </div>
-          </motion.div>
-        </>
-      )}
-    </AnimatePresence>
+        {/* Footer */}
+        <View style={[styles.footer, { borderTopColor: colors.border }]}>
+          <Text style={[styles.footerText, { color: colors.textSecondary }]}>
+            ابزارهای ناوبری VSS
+          </Text>
+        </View>
+      </Animated.View>
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  overlay: { ...StyleSheet.absoluteFillObject, zIndex: 999 },
+  backdrop: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.6)' },
+  drawer: {
+    position: 'absolute', top: 0, left: 0, bottom: 0,
+    width: 280, maxWidth: '80%',
+  },
+  header: {
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+    padding: 20, paddingTop: 30,
+  },
+  headerTitle: { fontSize: 14, fontWeight: '600' },
+  closeBtn: { width: 36, height: 36, borderRadius: 10, justifyContent: 'center', alignItems: 'center' },
+  divider: { height: 1, backgroundColor: '#88888820', marginHorizontal: 20 },
+  section: { padding: 16 },
+  sectionLabel: { fontSize: 10, marginBottom: 10, paddingHorizontal: 5 },
+  toolItem: {
+    flexDirection: 'row', alignItems: 'center', paddingVertical: 12, paddingHorizontal: 10,
+    borderRadius: 12, gap: 12,
+  },
+  toolIcon: { width: 40, height: 40, borderRadius: 12, justifyContent: 'center', alignItems: 'center' },
+  toolLabel: { fontSize: 13, fontWeight: '500' },
+  homeBtn: {
+    flexDirection: 'row', alignItems: 'center', paddingVertical: 12, paddingHorizontal: 10,
+    borderRadius: 12, gap: 12,
+  },
+  homeIcon: { width: 40, height: 40, borderRadius: 12, justifyContent: 'center', alignItems: 'center' },
+  homeName: { fontSize: 13, fontWeight: '500' },
+  homeDomain: { fontSize: 10, marginTop: 2 },
+  footer: { marginTop: 'auto', padding: 16, borderTopWidth: 1, alignItems: 'center' },
+  footerText: { fontSize: 10 },
+});
