@@ -38,7 +38,6 @@ export default function WebViewScreen() {
   const [isBlocked, setIsBlocked] = useState(false);
   const [blockedUrl, setBlockedUrl] = useState('');
   const [leftDrawerOpen, setLeftDrawerOpen] = useState(false);
-  const [rightDrawerOpen, setRightDrawerOpen] = useState(false);
 
   React.useEffect(() => {
     const unsubscribe = NetInfo.addEventListener(state => {
@@ -95,7 +94,6 @@ export default function WebViewScreen() {
   }, []);
 
   const openRightDrawer = useCallback(() => {
-    setRightDrawerOpen(true);
     navigation.dispatch(DrawerActions.openDrawer());
   }, [navigation]);
 
@@ -106,8 +104,6 @@ export default function WebViewScreen() {
       return currentUrl;
     }
   };
-
-  const isAnyDrawerOpen = leftDrawerOpen || rightDrawerOpen;
 
   if (!isOnline) {
     return <OfflineScreen onRetry={handleRefresh} type="offline" />;
@@ -160,7 +156,7 @@ export default function WebViewScreen() {
         </View>
       </View>
 
-      <View style={styles.webViewContainer} pointerEvents={isAnyDrawerOpen ? 'none' : 'auto'}>
+      <View style={styles.webViewContainer} pointerEvents={leftDrawerOpen ? 'none' : 'auto'}>
         {isLoading && (
           <View style={styles.loadingBar}>
             <View style={styles.loadingBarProgress} />
@@ -222,7 +218,6 @@ export default function WebViewScreen() {
         </TouchableOpacity>
       </View>
 
-      {/* Left Drawer */}
       <LeftDrawer
         isOpen={leftDrawerOpen}
         onClose={() => setLeftDrawerOpen(false)}
@@ -233,18 +228,6 @@ export default function WebViewScreen() {
         canGoBack={canGoBack}
         canGoForward={canGoForward}
       />
-
-      {/* Right Drawer overlay for closing when clicking outside */}
-      {rightDrawerOpen && (
-        <TouchableOpacity
-          style={StyleSheet.absoluteFill}
-          activeOpacity={1}
-          onPress={() => {
-            setRightDrawerOpen(false);
-            navigation.dispatch(DrawerActions.closeDrawer());
-          }}
-        />
-      )}
     </View>
   );
 }
