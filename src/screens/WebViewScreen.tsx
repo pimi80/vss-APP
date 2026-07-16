@@ -1,27 +1,21 @@
 import React, { useRef, useState, useCallback } from 'react';
 import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  ActivityIndicator,
-  Linking,
-  StatusBar,
-  Platform,
+  View, Text, TouchableOpacity, StyleSheet, ActivityIndicator,
+  Linking, StatusBar, Platform,
 } from 'react-native';
 import { WebView, WebViewNavigation } from 'react-native-webview';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import NetInfo from '@react-native-community/netinfo';
 import Icon from 'react-native-vector-icons/FontAwesome';
-import { DrawerActions, useNavigation, useRoute } from '@react-navigation/native';
+import { useRoute } from '@react-navigation/native';
 import { useTheme } from '../hooks/useTheme';
 import { COLORS, DEFAULT_URL, SITE_1, SITE_2, isAllowedUrl, isSpecialScheme } from '../config';
 import OfflineScreen from '../components/OfflineScreen';
 import BlockedScreen from '../components/BlockedScreen';
 import LeftDrawer from '../components/LeftDrawer';
+import RightDrawer from '../components/RightDrawer';
 
 export default function WebViewScreen() {
-  const navigation = useNavigation();
   const route = useRoute<any>();
   const insets = useSafeAreaInsets();
   const { isDark, colors } = useTheme();
@@ -38,6 +32,7 @@ export default function WebViewScreen() {
   const [isBlocked, setIsBlocked] = useState(false);
   const [blockedUrl, setBlockedUrl] = useState('');
   const [leftDrawerOpen, setLeftDrawerOpen] = useState(false);
+  const [rightDrawerOpen, setRightDrawerOpen] = useState(false);
 
   React.useEffect(() => {
     const unsubscribe = NetInfo.addEventListener(state => {
@@ -47,9 +42,7 @@ export default function WebViewScreen() {
   }, []);
 
   React.useEffect(() => {
-    if (route.params?.url) {
-      setCurrentUrl(route.params.url);
-    }
+    if (route.params?.url) setCurrentUrl(route.params.url);
   }, [route.params?.url]);
 
   const handleNavigationStateChange = useCallback((navState: WebViewNavigation) => {
@@ -61,76 +54,28 @@ export default function WebViewScreen() {
 
   const handleShouldStartLoad = useCallback((event: { url: string }) => {
     const { url } = event;
-    if (isSpecialScheme(url)) {
-      Linking.openURL(url);
-      return false;
-    }
-    if (!isAllowedUrl(url)) {
-      setIsBlocked(true);
-      setBlockedUrl(url);
-      return false;
-    }
+    if (isSpecialScheme(url)) { Linking.openURL(url); return false; }
+    if (!isAllowedUrl(url)) { setIsBlocked(true); setBlockedUrl(url); return false; }
     setIsBlocked(false);
     return true;
   }, []);
 
-  const handleRefresh = useCallback(() => {
-    setHasError(false);
-    webViewRef.current?.reload();
-  }, []);
+  const handleRefresh = useCallback(() => { setHasError(false); webViewRef.current?.reload(); }, []);
+  const handleBack = useCallback(() => { webViewRef.current?.goBack(); }, []);
+  const handleForward = useCallback(() => { webViewRef.current?.goForward(); }, []);
+  const handleNavigate = useCallback((url: string) => { setIsBlocked(false); setHasError(false); setCurrentUrl(url); }, []);
 
-  const handleBack = useCallback(() => {
-    webViewRef.current?.goBack();
-  }, []);
+  const getDisplayUrl = () => { try { return new URL(currentUrl).hostname; } catch { return currentUrl; } };
 
-  const handleForward = useCallback(() => {
-    webViewRef.current?.goForward();
-  }, []);
+  const isAnyDrawerOpen = leftDrawerOpen || rightDrawerOpen;
 
-  const handleGoHome = useCallback((url: string) => {
-    setIsBlocked(false);
-    setHasError(false);
-    setCurrentUrl(url);
-  }, []);
-
-  const openRightDrawer = useCallback(() => {
-    navigation.dispatch(DrawerActions.openDrawer());
-  }, [navigation]);
-
-  const getDisplayUrl = () => {
-    try {
-      return new URL(currentUrl).hostname;
-    } catch {
-      return currentUrl;
-    }
-  };
-
-  if (!isOnline) {
-    return <OfflineScreen onRetry={handleRefresh} type="offline" />;
-  }
-
-  if (isBlocked) {
-    return (
-      <BlockedScreen
-        blockedUrl={blockedUrl}
-        onGoBack={() => {
-          setIsBlocked(false);
-          if (canGoBack) handleBack();
-        }}
-      />
-    );
-  }
-
-  if (hasError) {
-    return <OfflineScreen onRetry={handleRefresh} type="error" />;
-  }
+  if (!isOnline) return <OfflineScreen onRetry={handleRefresh} type="offline" />;
+  if (isBlocked) return <BlockedScreen blockedUrl={blockedUrl} onGoBack={() => { setIsBlocked(false); if (canGoBack) handleBack(); }} />;
+  if (hasError) return <OfflineScreen onRetry={handleRefresh} type="error" />;
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <StatusBar
-        barStyle={isDark ? 'light-content' : 'dark-content'}
-        backgroundColor={colors.surface}
-      />
+      <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} backgroundColor={colors.surface} />
 
       <View style={[styles.appBar, { backgroundColor: colors.surface, paddingTop: insets.top }]}>
         <View style={styles.gradientLine} />
@@ -138,59 +83,28 @@ export default function WebViewScreen() {
           <TouchableOpacity style={styles.iconBtn} onPress={() => setLeftDrawerOpen(true)}>
             <Icon name="wrench" size={18} color={colors.textSecondary} />
           </TouchableOpacity>
-
           <View style={[styles.urlBar, { backgroundColor: colors.card }]}>
-            {isLoading ? (
-              <ActivityIndicator size="small" color={COLORS.brandBlue} />
-            ) : (
-              <Icon name="lock" size={12} color="#22c55e" />
-            )}
-            <Text style={[styles.urlText, { color: colors.textSecondary }]} numberOfLines={1}>
-              {getDisplayUrl()}
-            </Text>
+            {isLoading ? <ActivityIndicator size="small" color={COLORS.brandBlue} /> : <Icon name="lock" size={12} color="#22c55e" />}
+            <Text style={[styles.urlText, { color: colors.textSecondary }]} numberOfLines={1}>{getDisplayUrl()}</Text>
           </View>
-
-          <TouchableOpacity style={styles.iconBtn} onPress={openRightDrawer}>
+          <TouchableOpacity style={styles.iconBtn} onPress={() => setRightDrawerOpen(true)}>
             <Icon name="bars" size={18} color={colors.textSecondary} />
           </TouchableOpacity>
         </View>
       </View>
 
-      <View style={styles.webViewContainer} pointerEvents={leftDrawerOpen ? 'none' : 'auto'}>
-        {isLoading && (
-          <View style={styles.loadingBar}>
-            <View style={styles.loadingBarProgress} />
-          </View>
-        )}
-
+      <View style={styles.webViewContainer} pointerEvents={isAnyDrawerOpen ? 'none' : 'auto'}>
+        {isLoading && <View style={styles.loadingBar}><View style={styles.loadingBarProgress} /></View>}
         <WebView
-          ref={webViewRef}
-          source={{ uri: currentUrl }}
+          ref={webViewRef} source={{ uri: currentUrl }}
           onNavigationStateChange={handleNavigationStateChange}
           onShouldStartLoadWithRequest={handleShouldStartLoad}
-          onError={() => setHasError(true)}
-          onHttpError={() => setHasError(true)}
-          onLoadStart={() => setIsLoading(true)}
-          onLoadEnd={() => setIsLoading(false)}
-          startInLoadingState={true}
-          renderLoading={() => (
-            <View style={[styles.loadingOverlay, { backgroundColor: colors.background }]}>
-              <ActivityIndicator size="large" color={COLORS.brandBlue} />
-              <Text style={[styles.loadingText, { color: colors.textSecondary }]}>
-                در حال بارگذاری...
-              </Text>
-            </View>
-          )}
-          javaScriptEnabled={true}
-          domStorageEnabled={true}
-          thirdPartyCookiesEnabled={true}
-          sharedCookiesEnabled={true}
-          allowsBackForwardNavigationGestures={true}
-          allowsInlineMediaPlayback={true}
-          mediaPlaybackRequiresUserAction={false}
-          allowFileAccess={true}
-          allowFileAccessFromFileURLs={true}
-          scalesPageToFit={true}
+          onError={() => setHasError(true)} onHttpError={() => setHasError(true)}
+          onLoadStart={() => setIsLoading(true)} onLoadEnd={() => setIsLoading(false)}
+          startInLoadingState
+          javaScriptEnabled domStorageEnabled thirdPartyCookiesEnabled sharedCookiesEnabled
+          allowsBackForwardNavigationGestures allowsInlineMediaPlayback
+          mediaPlaybackRequiresUserAction={false} allowFileAccess allowFileAccessFromFileURLs scalesPageToFit
           style={{ flex: 1, backgroundColor: isDark ? COLORS.dark : '#fff' }}
         />
       </View>
@@ -198,23 +112,20 @@ export default function WebViewScreen() {
       <View style={[styles.bottomBar, { backgroundColor: colors.surface, paddingBottom: insets.bottom }]}>
         <TouchableOpacity style={styles.bottomBtn} onPress={handleBack} disabled={!canGoBack}>
           <Icon name="arrow-right" size={18} color={canGoBack ? colors.text : colors.textSecondary} style={{ opacity: canGoBack ? 1 : 0.3 }} />
-          <Text style={[styles.bottomBtnText, { color: colors.textSecondary, opacity: canGoBack ? 1 : 0.3 }]}>بازگشت</Text>
+          <Text style={styles.bottomBtnText}>بازگشت</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.bottomBtn} onPress={handleForward} disabled={!canGoForward}>
           <Icon name="arrow-left" size={18} color={canGoForward ? colors.text : colors.textSecondary} style={{ opacity: canGoForward ? 1 : 0.3 }} />
-          <Text style={[styles.bottomBtnText, { color: colors.textSecondary, opacity: canGoForward ? 1 : 0.3 }]}>جلو</Text>
+          <Text style={styles.bottomBtnText}>جلو</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.bottomBtn} onPress={handleRefresh}>
-          <Icon name="refresh" size={18} color={colors.text} />
-          <Text style={[styles.bottomBtnText, { color: colors.textSecondary }]}>بارگذاری</Text>
+          <Icon name="refresh" size={18} color={colors.text} /><Text style={styles.bottomBtnText}>بارگذاری</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.bottomBtn} onPress={() => handleGoHome(SITE_1.url)}>
-          <Icon name="home" size={18} color={COLORS.brandRed} />
-          <Text style={[styles.bottomBtnText, { color: colors.textSecondary }]}>{SITE_1.domain.split('.')[0]}</Text>
+        <TouchableOpacity style={styles.bottomBtn} onPress={() => handleNavigate(SITE_1.url)}>
+          <Icon name="home" size={18} color={COLORS.brandRed} /><Text style={styles.bottomBtnText}>{SITE_1.domain.split('.')[0]}</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.bottomBtn} onPress={() => handleGoHome(SITE_2.url)}>
-          <Icon name="home" size={18} color={COLORS.brandBlue} />
-          <Text style={[styles.bottomBtnText, { color: colors.textSecondary }]}>{SITE_2.domain.split('.')[0]}</Text>
+        <TouchableOpacity style={styles.bottomBtn} onPress={() => handleNavigate(SITE_2.url)}>
+          <Icon name="home" size={18} color={COLORS.brandBlue} /><Text style={styles.bottomBtnText}>{SITE_2.domain.split('.')[0]}</Text>
         </TouchableOpacity>
       </View>
 
@@ -224,7 +135,18 @@ export default function WebViewScreen() {
         onRefresh={handleRefresh}
         onBack={handleBack}
         onForward={handleForward}
-        onGoHome={handleGoHome}
+        onGoHome={handleNavigate}
+        canGoBack={canGoBack}
+        canGoForward={canGoForward}
+      />
+
+      <RightDrawer
+        isOpen={rightDrawerOpen}
+        onClose={() => setRightDrawerOpen(false)}
+        onNavigate={handleNavigate}
+        onRefresh={handleRefresh}
+        onBack={handleBack}
+        onForward={handleForward}
         canGoBack={canGoBack}
         canGoForward={canGoForward}
       />
@@ -243,9 +165,7 @@ const styles = StyleSheet.create({
   webViewContainer: { flex: 1, position: 'relative' },
   loadingBar: { position: 'absolute', top: 0, left: 0, right: 0, height: 3, backgroundColor: 'rgba(0,0,0,0.1)', zIndex: 10 },
   loadingBarProgress: { height: '100%', width: '60%', backgroundColor: COLORS.brandBlue, borderRadius: 2 },
-  loadingOverlay: { ...StyleSheet.absoluteFillObject, justifyContent: 'center', alignItems: 'center' },
-  loadingText: { marginTop: 15, fontSize: 13 },
   bottomBar: { flexDirection: 'row', justifyContent: 'space-around', paddingVertical: 8, borderTopWidth: 1, borderTopColor: 'rgba(0,0,0,0.05)' },
   bottomBtn: { alignItems: 'center', paddingHorizontal: 10, paddingVertical: 5 },
-  bottomBtnText: { fontSize: 9, marginTop: 4 },
+  bottomBtnText: { fontSize: 9, marginTop: 4, color: '#888' },
 });
