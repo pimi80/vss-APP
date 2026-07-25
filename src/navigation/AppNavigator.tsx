@@ -1,18 +1,32 @@
 import React from 'react';
+import { Dimensions } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { createDrawerNavigator } from '@react-navigation/drawer';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import WebViewScreen from '../screens/WebViewScreen';
+import { useTheme } from '../hooks/useTheme';
 
-const Stack = createNativeStackNavigator();
+const { width } = Dimensions.get('window');
+const Drawer = createDrawerNavigator();
 
 export default function AppNavigator() {
+  const { colors } = useTheme();
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <NavigationContainer>
-        <Stack.Navigator screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="WebView" component={WebViewScreen} />
-        </Stack.Navigator>
+        <Drawer.Navigator
+          screenOptions={{
+            headerShown: false,
+            drawerPosition: 'right',
+            drawerType: 'front',
+            drawerStyle: { width: width * 0.8, maxWidth: 320, backgroundColor: colors.surface },
+            overlayColor: 'rgba(0,0,0,0.6)',
+            swipeEnabled: false,
+          }}
+        >
+          <Drawer.Screen name="WebView" component={WebViewScreen} />
+        </Drawer.Navigator>
       </NavigationContainer>
     </GestureHandlerRootView>
   );
