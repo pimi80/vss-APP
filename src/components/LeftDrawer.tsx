@@ -34,7 +34,7 @@ export default function LeftDrawer({
   ];
 
   return (
-    <Modal visible={isOpen} transparent animationType="none" onRequestClose={onClose}>
+    <Modal visible={isOpen} transparent animationType="slide" onRequestClose={onClose}>
       <View style={styles.overlay}>
         <TouchableOpacity style={styles.backdrop} onPress={onClose} activeOpacity={1} />
         <View style={[styles.drawer, { backgroundColor: colors.surface }]}>

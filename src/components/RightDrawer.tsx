@@ -34,7 +34,7 @@ export default function RightDrawer({
   };
 
   return (
-    <Modal visible={isOpen} transparent animationType="none" onRequestClose={onClose}>
+    <Modal visible={isOpen} transparent animationType="slide" onRequestClose={onClose}>
       <View style={styles.overlay}>
         <TouchableOpacity style={styles.backdrop} onPress={onClose} activeOpacity={1} />
         <View style={[styles.drawer, { backgroundColor: colors.surface }]}>
@@ -91,7 +91,7 @@ export default function RightDrawer({
             </View>
             {QUICK_LINKS.filter(l => l.site === 1).map((link, i) => (
               <TouchableOpacity key={i} style={styles.linkItem} onPress={() => handleLinkPress(link.url)} activeOpacity={0.7}>
-                <Icon name={link.icon} size={16} color={colors.textSecondary} />
+                <Text style={{fontSize:16}}>{link.icon}</Text>
                 <Text style={[styles.linkText, { color: colors.text }]}>{link.label}</Text>
                 <Icon name="external-link" size={10} color={colors.textSecondary} style={{ opacity: 0.3 }} />
               </TouchableOpacity>
@@ -105,7 +105,7 @@ export default function RightDrawer({
             </View>
             {QUICK_LINKS.filter(l => l.site === 2).map((link, i) => (
               <TouchableOpacity key={i} style={styles.linkItem} onPress={() => handleLinkPress(link.url)} activeOpacity={0.7}>
-                <Icon name={link.icon} size={16} color={colors.textSecondary} />
+                <Text style={{fontSize:16}}>{link.icon}</Text>
                 <Text style={[styles.linkText, { color: colors.text }]}>{link.label}</Text>
                 <Icon name="external-link" size={10} color={colors.textSecondary} style={{ opacity: 0.3 }} />
               </TouchableOpacity>
