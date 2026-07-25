@@ -46,7 +46,7 @@ export default function RightDrawer({
           </View>
 
           <View style={[styles.logoCard, { backgroundColor: colors.card }]}>
-            <VSSLogo size="lg" animate={true} />
+            <VSSLogo size="xl" animate={true} />
             <Text style={[styles.logoSubtitle, { color: colors.textSecondary }]}>
               مرورگر اختصاصی{' '}
               <Text style={{ writingDirection: 'ltr' }}>

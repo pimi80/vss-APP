@@ -3,19 +3,19 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import Animated, { FadeIn, ZoomIn } from 'react-native-reanimated';
 import { useTheme } from '../hooks/useTheme';
-import { COLORS } from '../config';
+import { COLORS, SITE_1 } from '../config';
 
 interface OfflineScreenProps {
   onRetry: () => void;
+  onGoHome?: () => void;
   type?: 'offline' | 'error';
 }
 
-export default function OfflineScreen({ onRetry, type = 'offline' }: OfflineScreenProps) {
+export default function OfflineScreen({ onRetry, onGoHome, type = 'offline' }: OfflineScreenProps) {
   const { colors } = useTheme();
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      {/* Icon */}
       <Animated.View entering={ZoomIn.springify()} style={styles.iconContainer}>
         <View style={styles.iconCircle}>
           <Icon
@@ -23,13 +23,10 @@ export default function OfflineScreen({ onRetry, type = 'offline' }: OfflineScre
             size={50}
             color={COLORS.brandRed}
           />
-          {type === 'offline' && (
-            <View style={styles.slashLine} />
-          )}
+          {type === 'offline' && <View style={styles.slashLine} />}
         </View>
       </Animated.View>
 
-      {/* Text */}
       <Animated.View entering={FadeIn.delay(200)}>
         <Text style={[styles.title, { color: colors.text }]}>
           {type === 'offline' ? 'اتصال اینترنت قطع است' : 'خطا در اتصال به سرور'}
@@ -44,70 +41,45 @@ export default function OfflineScreen({ onRetry, type = 'offline' }: OfflineScre
         </Text>
       </Animated.View>
 
-      {/* Retry button */}
-      <Animated.View entering={FadeIn.delay(400)}>
+      <Animated.View entering={FadeIn.delay(400)} style={styles.buttonsRow}>
         <TouchableOpacity style={styles.button} onPress={onRetry} activeOpacity={0.8}>
           <Icon name="refresh" size={18} color="#fff" />
           <Text style={styles.buttonText}>تلاش مجدد</Text>
         </TouchableOpacity>
+
+        {onGoHome && (
+          <TouchableOpacity style={[styles.button, styles.homeButton]} onPress={onGoHome} activeOpacity={0.8}>
+            <Icon name="home" size={18} color="#fff" />
+            <Text style={styles.buttonText}>{SITE_1.domain.split('.')[0]}</Text>
+          </TouchableOpacity>
+        )}
       </Animated.View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 30,
-  },
-  iconContainer: {
-    marginBottom: 30,
-  },
+  container: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 30 },
+  iconContainer: { marginBottom: 30 },
   iconCircle: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
+    width: 100, height: 100, borderRadius: 50,
     backgroundColor: 'rgba(220,38,38,0.1)',
-    borderWidth: 2,
-    borderColor: 'rgba(220,38,38,0.2)',
-    justifyContent: 'center',
-    alignItems: 'center',
+    borderWidth: 2, borderColor: 'rgba(220,38,38,0.2)',
+    justifyContent: 'center', alignItems: 'center',
   },
   slashLine: {
-    position: 'absolute',
-    width: 70,
-    height: 3,
+    position: 'absolute', width: 70, height: 3,
     backgroundColor: COLORS.brandRed,
-    transform: [{ rotate: '-45deg' }],
-    borderRadius: 2,
+    transform: [{ rotate: '-45deg' }], borderRadius: 2,
   },
-  title: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 10,
-  },
-  message: {
-    fontSize: 14,
-    textAlign: 'center',
-    lineHeight: 24,
-    marginBottom: 30,
-    maxWidth: 280,
-  },
+  title: { fontSize: 22, fontWeight: 'bold', textAlign: 'center', marginBottom: 10 },
+  message: { fontSize: 14, textAlign: 'center', lineHeight: 24, marginBottom: 30, maxWidth: 280 },
+  buttonsRow: { flexDirection: 'row', gap: 15 },
   button: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    paddingHorizontal: 30,
-    paddingVertical: 14,
-    borderRadius: 25,
+    flexDirection: 'row', alignItems: 'center', gap: 10,
+    paddingHorizontal: 25, paddingVertical: 14, borderRadius: 25,
     backgroundColor: COLORS.brandBlue,
   },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
+  homeButton: { backgroundColor: COLORS.brandRed },
+  buttonText: { color: '#fff', fontSize: 16, fontWeight: '600' },
 });

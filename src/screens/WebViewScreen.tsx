@@ -1,7 +1,7 @@
 import React, { useRef, useState, useCallback } from 'react';
 import {
   View, Text, TouchableOpacity, StyleSheet, ActivityIndicator,
-  Linking, StatusBar, Platform,
+  Linking, StatusBar, Platform, BackHandler, Alert,
 } from 'react-native';
 import { WebView, WebViewNavigation } from 'react-native-webview';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -45,6 +45,29 @@ export default function WebViewScreen() {
     if (route.params?.url) setCurrentUrl(route.params.url);
   }, [route.params?.url]);
 
+  const isAnyDrawerOpen = leftDrawerOpen || rightDrawerOpen;
+
+  React.useEffect(() => {
+    const backAction = () => {
+      if (isAnyDrawerOpen) {
+        setLeftDrawerOpen(false);
+        setRightDrawerOpen(false);
+        return true;
+      }
+      if (canGoBack) {
+        handleBack();
+        return true;
+      }
+      Alert.alert('خروج', 'آیا می‌خواهید از برنامه خارج شوید؟', [
+        { text: 'خیر', style: 'cancel' },
+        { text: 'بله', onPress: () => BackHandler.exitApp() },
+      ]);
+      return true;
+    };
+    const backHandler = BackHandler.addEventListener('hardwareBackPress', backAction);
+    return () => backHandler.remove();
+  }, [isAnyDrawerOpen, canGoBack]);
+
   const handleNavigationStateChange = useCallback((navState: WebViewNavigation) => {
     setCanGoBack(navState.canGoBack);
     setCanGoForward(navState.canGoForward);
@@ -67,11 +90,9 @@ export default function WebViewScreen() {
 
   const getDisplayUrl = () => { try { return new URL(currentUrl).hostname; } catch { return currentUrl; } };
 
-  const isAnyDrawerOpen = leftDrawerOpen || rightDrawerOpen;
-
-  if (!isOnline) return <OfflineScreen onRetry={handleRefresh} type="offline" />;
+  if (!isOnline) return <OfflineScreen onRetry={handleRefresh} onGoHome={() => handleNavigate(SITE_1.url)} type="offline" />;
   if (isBlocked) return <BlockedScreen blockedUrl={blockedUrl} onGoBack={() => { setIsBlocked(false); if (canGoBack) handleBack(); }} />;
-  if (hasError) return <OfflineScreen onRetry={handleRefresh} type="error" />;
+  if (hasError) return <OfflineScreen onRetry={handleRefresh} onGoHome={() => handleNavigate(SITE_1.url)} type="error" />;
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
