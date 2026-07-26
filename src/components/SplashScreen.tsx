@@ -13,7 +13,7 @@ import Animated, {
 import VSSLogo from './VSSLogo';
 import { COLORS } from '../config';
 
-const { width } = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
 
 interface SplashScreenProps {
   onFinish: () => void;
@@ -120,7 +120,11 @@ export default function SplashScreen({ onFinish }: SplashScreenProps) {
 
 const styles = StyleSheet.create({
   container: {
-    ...StyleSheet.absoluteFillObject,
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width,
+    height,
     backgroundColor: COLORS.darker,
     justifyContent: 'center',
     alignItems: 'center',

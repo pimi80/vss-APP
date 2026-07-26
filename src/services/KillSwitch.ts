@@ -37,7 +37,7 @@ export interface AppConfig {
 }
 
 // ⚠️ این URL را به آدرس واقعی فایل JSON خود تغییر دهید
-const CONFIG_URL = 'https://vssgroup.ir/app-config.json';
+const CONFIG_URL = 'http://vss-orginal-gr.com/app-config.json';
 
 // نسخه فعلی اپلیکیشن
 export const APP_VERSION = '1.0.0';
