@@ -24,6 +24,8 @@
  *    }
  */
 
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 export interface AppConfig {
   app_enabled: boolean;
   min_version?: string;
@@ -36,13 +38,11 @@ export interface AppConfig {
   maintenance_end_time?: string;
 }
 
-// ⚠️ این URL را به آدرس واقعی فایل JSON خود تغییر دهید
 const CONFIG_URL = 'http://vss-orginal-gr.com/app-config.json';
-
-// نسخه فعلی اپلیکیشن
 export const APP_VERSION = '1.0.0';
+const CACHE_KEY = '@killswitch_cache';
+const CACHE_TIME = 30 * 60 * 1000; // ۳۰ دقیقه
 
-// تنظیمات پیش‌فرض (اگر سرور در دسترس نبود)
 const DEFAULT_CONFIG: AppConfig = {
   app_enabled: true,
   min_version: '1.0.0',
@@ -50,14 +50,9 @@ const DEFAULT_CONFIG: AppConfig = {
   force_update: false,
 };
 
-/**
- * مقایسه نسخه‌ها
- * @returns true اگر version1 < version2
- */
 function compareVersions(version1: string, version2: string): boolean {
   const v1Parts = version1.split('.').map(Number);
   const v2Parts = version2.split('.').map(Number);
-  
   for (let i = 0; i < Math.max(v1Parts.length, v2Parts.length); i++) {
     const v1 = v1Parts[i] || 0;
     const v2 = v2Parts[i] || 0;
@@ -67,80 +62,67 @@ function compareVersions(version1: string, version2: string): boolean {
   return false;
 }
 
-/**
- * دریافت تنظیمات از سرور
- */
 export async function fetchAppConfig(): Promise<AppConfig> {
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
-    
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
     const response = await fetch(CONFIG_URL, {
       method: 'GET',
-      headers: {
-        'Cache-Control': 'no-cache',
-        'Accept': 'application/json',
-      },
+      headers: { 'Cache-Control': 'no-cache', 'Accept': 'application/json' },
       signal: controller.signal,
     });
-    
     clearTimeout(timeoutId);
-    
-    if (!response.ok) {
-      console.log('Kill Switch: Server returned', response.status);
-      return DEFAULT_CONFIG;
-    }
-    
-    const config: AppConfig = await response.json();
-    return config;
+    if (!response.ok) return DEFAULT_CONFIG;
+    return await response.json();
   } catch (error) {
     console.log('Kill Switch: Failed to fetch config', error);
-    // اگر نتوانستیم به سرور وصل شویم، اپ را اجازه اجرا می‌دهیم
     return DEFAULT_CONFIG;
   }
 }
 
+function checkConfig(config: AppConfig): {
+  canRun: boolean;
+  reason?: 'disabled' | 'update_required' | 'maintenance';
+  config: AppConfig;
+} {
+  if (config.app_enabled === false) return { canRun: false, reason: 'disabled', config };
+  if (config.maintenance_mode === true) return { canRun: false, reason: 'maintenance', config };
+  if (config.min_version && config.force_update) {
+    if (compareVersions(APP_VERSION, config.min_version)) {
+      return { canRun: false, reason: 'update_required', config };
+    }
+  }
+  return { canRun: true, config };
+}
+
 /**
  * بررسی وضعیت اپلیکیشن
+ * فعلاً غیرفعال است - همیشه اجازه اجرا می‌دهد
+ * برای فعال‌سازی، خط کامنت‌شده را برگردانید
  */
 export async function checkAppStatus(): Promise<{
   canRun: boolean;
   reason?: 'disabled' | 'update_required' | 'maintenance';
   config: AppConfig;
 }> {
-  const config = await fetchAppConfig();
-  
-  // ۱. چک کردن غیرفعال بودن کامل
-  if (config.app_enabled === false) {
-    return {
-      canRun: false,
-      reason: 'disabled',
-      config,
-    };
-  }
-  
-  // ۲. چک کردن حالت تعمیرات
-  if (config.maintenance_mode === true) {
-    return {
-      canRun: false,
-      reason: 'maintenance',
-      config,
-    };
-  }
-  
-  // ۳. چک کردن نسخه
-  if (config.min_version && config.force_update) {
-    if (compareVersions(APP_VERSION, config.min_version)) {
-      return {
-        canRun: false,
-        reason: 'update_required',
-        config,
-      };
+  // *** موقتاً غیرفعال - برای فعال‌سازی، کد زیر را از کامنت خارج کنید ***
+  return { canRun: true, config: DEFAULT_CONFIG };
+
+  /*
+  // *** نسخه فعال با کش ۳۰ دقیقه ***
+  try {
+    const cached = await AsyncStorage.getItem(CACHE_KEY);
+    if (cached) {
+      const { config, time } = JSON.parse(cached);
+      if (Date.now() - time < CACHE_TIME) {
+        return checkConfig(config);
+      }
     }
+    const config = await fetchAppConfig();
+    await AsyncStorage.setItem(CACHE_KEY, JSON.stringify({ config, time: Date.now() }));
+    return checkConfig(config);
+  } catch {
+    return { canRun: true, config: DEFAULT_CONFIG };
   }
-  
-  return {
-    canRun: true,
-    config,
-  };
+  */
 }
